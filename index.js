@@ -23,12 +23,11 @@ async function ethgettx(address, year, month) {
                 continue;
             }
             // If the month is not specified and the month doesn't match, skip
-            if (month != -1 && date.getUTCMonth()+1 != month) {
+            if (month != -1 && date.getUTCMonth() + 1 != month) {
                 continue;
             }
 
-            var datestr = `${date.getUTCFullYear()}-${date.getUTCMonth()+1}-${date.getUTCDate()}`
-            console.log(`Getting transaction data for ${datestr}...`);
+            var datestr = `${date.getUTCFullYear()}-${date.getUTCMonth() + 1}-${date.getUTCDate()}`
 
             // human readable date
             outtx.hdate = datestr;
@@ -36,8 +35,11 @@ async function ethgettx(address, year, month) {
             const usdpereth = usdperethin.data.data.amount;
             // probably inaccurate, but whatever
             // TODO Use BigNumber stuff
-            const eth = outtx.amount/Math.pow(10,18);
-            outtx.usd = usdpereth*eth
+            const eth = outtx.amount / Math.pow(10, 18);
+            outtx.usd = usdpereth * eth
+
+            console.log(`Date: ${datestr}, ETH Price: ${usdpereth}, Amount Received: ${eth}`);
+
             outlist.push(outtx);
         }
 
@@ -65,5 +67,5 @@ if (process.argv.length < 3 || process.argv.length > 5) {
     } else {
         ethgettx(process.argv[2], -1, -1);
     }
-    
+
 }
