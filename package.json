@@ -1,0 +1,14 @@
+{
+  "name": "ethgettx",
+  "version": "1.0.0",
+  "description": "Get ETH transactions from address, and get USD value",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "doublej472",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.21.1"
+  }
+}
