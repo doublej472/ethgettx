@@ -33,6 +33,9 @@ async function processTx(tx) {
 async function getethtxs(address) {
     var txs = (await axios.get(`https://api.etherscan.io/api?module=account&action=txlist&address=${address}`)).data
     if (txs.status == 0) {
+        if (txs.message == "No transactions found") {
+            return []
+        }
         console.error("!!! Failed to get transaction data from etherscan.io!")
         console.error(`!!! Error message: ${txs.result}`)
         process.exit(0)
@@ -43,6 +46,9 @@ async function getethtxs(address) {
 async function getpolytxs(address) {
     var txs = (await axios.get(`https://api.polygonscan.com/api?module=account&action=tokentx&address=${address}`)).data
     if (txs.status == 0) {
+        if (txs.message == "No transactions found") {
+            return []
+        }
         console.error("!!! Failed to get transaction data from polygonscan.com!")
         console.error(`!!! Error message: ${txs.result}`)
         process.exit(0)
