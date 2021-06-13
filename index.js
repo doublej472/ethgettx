@@ -67,10 +67,10 @@ async function ethgettx(address, year, month) {
         // Print info for each transaction
         for (outtx of outlist) {
             console.log(`TX Hash: ${outtx.hash}`)
-            console.log(`  Type: ${outtx.type}`)
+            console.log(`  Network: ${outtx.type}`)
             console.log(`  Date: ${outtx.datestr}`)
             console.log(`  ETH Price: ${outtx.usdpereth}`)
-            console.log(`  Amount Received: ${outtx.eth}`)
+            console.log(`  ETH Received: ${outtx.eth}`)
             console.log(`  USD Value: ${roundHundredths(outtx.usd)}`)
         }
 
