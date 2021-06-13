@@ -30,14 +30,34 @@ async function processTx(tx) {
     return outtx
 }
 
+async function getethtxs(address) {
+    var txs = (await axios.get(`https://api.etherscan.io/api?module=account&action=txlist&address=${address}`)).data
+    if (txs.status == 0) {
+        console.error("!!! Failed to get transaction data from etherscan.io!")
+        console.error(`!!! Error message: ${txs.result}`)
+        process.exit(0)
+    }
+    return txs.result.filter(tx => tx.from == "0xea674fdde714fd979de3edf0f56aa9716b898ec8");
+}
+
+async function getpolytxs(address) {
+    var txs = (await axios.get(`https://api.polygonscan.com/api?module=account&action=tokentx&address=${address}`)).data
+    if (txs.status == 0) {
+        console.error("!!! Failed to get transaction data from polygonscan.com!")
+        console.error(`!!! Error message: ${txs.result}`)
+        process.exit(0)
+    }
+    return txs.result.filter(tx => tx.from == "0xc0899474fa0a2f650231befcd5c775c2d9ff04f1");
+}
+
 async function ethgettx(address, year, month) {
     try {
         // There are both Ethereum and Polygon payouts, that can be mixed in any order, so check both addresses
         // Also we only care about transactions coming from ethermine, so filter for those
         console.log(`Fetching Ethereum transactions for ${address}...`);
-        const txlistinether = (await axios.get(`https://api.etherscan.io/api?module=account&action=txlist&address=${address}`)).data.result.filter(tx => tx.from == "0xea674fdde714fd979de3edf0f56aa9716b898ec8");
+        const txlistinether = await getethtxs(address)
         console.log(`Fetching Polygon transactions for ${address}...`);
-        const txlistinpoly = (await axios.get(`https://api.polygonscan.com/api?module=account&action=tokentx&address=${address}`)).data.result.filter(tx => tx.from == "0xc0899474fa0a2f650231befcd5c775c2d9ff04f1");
+        const txlistinpoly = await getpolytxs(address)
         // Mark the elements of each list so we know where they came from
         txlistinether.forEach(tx => tx.type = "Ethereum")
         txlistinpoly.forEach(tx => tx.type = "Polygon")
