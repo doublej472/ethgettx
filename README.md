@@ -7,7 +7,8 @@ A nodejs program that fetches and processes your payouts from [Ethermine](https:
  * Fetches the historical ethereum price on the payout date from [Coinbase](https://www.coinbase.com).
  * Calculates the USD value of the payout at that specific date (useful for tracking taxable events).
  * Calculates the total ETH and (time-corrected) USD value of the payouts.
- * Supports restricting payouts to a specific year or month.
+ * Supports restricting payouts to a specific date range.
+ * Supports displaying any currency that Coinbase supports.
 
 ## How to use
 
@@ -23,17 +24,17 @@ npm install
 
 Now you can run the program with:
 ```
-npm start <your miner address here>
+nodejs index.js <your miner address here>
 ```
 
-Or if you wanted to restrict it to a specific year:
+Or if you wanted to restrict it to a certain date range:
 ```
-npm start <your miner address here> 2021
+nodejs index.js <your miner address here> --startdate=2021-1-1 --enddate=2021-6-12
 ```
 
-Or month:
+Or if you want to use a different currency than USD:
 ```
-npm start <your miner address here> 2021 1
+nodejs index.js <your miner address here> --currency=GBP
 ```
 
 ## How this works
@@ -41,7 +42,7 @@ This works by fetching transaction data for your account from [Etherscan](https:
 For each transaction, we get the price data for Ethereum on that specific date from [Coinbase](https://www.coinbase.com).
 
 The source code should be relatively simple to understand if you have worked with async javascript,
-everything is in the [index.js](https://github.com/doublej472/ethgettx/blob/master/index.js) file, and the only dependency is Axios.
+everything is in the [index.js](https://github.com/doublej472/ethgettx/blob/master/index.js) file, and the only dependencies are Axios and Minimist.
 
 ## Something is wrong / I want to help!
 Feel free to open an issue [here](https://github.com/doublej472/ethgettx/issues).

@@ -1,5 +1,10 @@
 const axios = require('axios');
 
+var CURRENCY="USD"
+// Min and Max unix timestamp
+var START_DATE = new Date(-8640000000000000)
+var END_DATE = new Date(8640000000000000)
+
 // Stolen from https://stackoverflow.com/questions/11832914/how-to-round-to-at-most-2-decimal-places-if-necessary
 function roundHundredths(num) {
     return Math.round((num + Number.EPSILON) * 100) / 100
@@ -20,12 +25,12 @@ async function processTx(tx) {
     var date = new Date(tx.timeStamp * 1000);
     outtx.datestr = `${date.getUTCFullYear()}-${date.getUTCMonth() + 1}-${date.getUTCDate()}`
 
-    const usdperethin = await axios.get(`https://api.coinbase.com/v2/prices/ETH-USD/spot?date=${outtx.datestr}`)
-    outtx.usdpereth = usdperethin.data.data.amount;
+    const curperethin = await axios.get(`https://api.coinbase.com/v2/prices/ETH-${CURRENCY}/spot?date=${outtx.datestr}`)
+    outtx.curpereth = curperethin.data.data.amount;
     // probably inaccurate, but whatever
     // TODO Use BigNumber stuff
     outtx.eth = outtx.value / Math.pow(10, 18);
-    outtx.usd = outtx.usdpereth * outtx.eth
+    outtx.cur = outtx.curpereth * outtx.eth
 
     return outtx
 }
@@ -56,7 +61,7 @@ async function getpolytxs(address) {
     return txs.result.filter(tx => tx.from == "0xc0899474fa0a2f650231befcd5c775c2d9ff04f1");
 }
 
-async function ethgettx(address, year, month) {
+async function ethgettx(address) {
     try {
         // There are both Ethereum and Polygon payouts, that can be mixed in any order, so check both addresses
         // Also we only care about transactions coming from ethermine, so filter for those
@@ -76,13 +81,9 @@ async function ethgettx(address, year, month) {
         for (tx of txlist) {
             // YYYY-MM-DD
             var date = new Date(tx.timeStamp * 1000);
-            // If the year is specified and the year doesn't match, skip
-            if (year != -1 && date.getUTCFullYear() != year) {
-                return;
-            }
-            // If the month is specified and the month doesn't match, skip
-            if (month != -1 && date.getUTCMonth() + 1 != month) {
-                return;
+            if ((date.getTime() > END_DATE.getTime()) ||
+                (date.getTime() < START_DATE.getTime())) {
+                continue
             }
 
             midlist.push(processTx(tx))
@@ -95,28 +96,32 @@ async function ethgettx(address, year, month) {
             console.log(`TX Hash: ${outtx.hash}`)
             console.log(`  Network: ${outtx.type}`)
             console.log(`  Date: ${outtx.datestr}`)
-            console.log(`  ETH Price: ${outtx.usdpereth}`)
+            console.log(`  ETH Price: ${outtx.curpereth}`)
             console.log(`  ETH Received: ${outtx.eth}`)
-            console.log(`  USD Value: ${roundHundredths(outtx.usd)}`)
+            console.log(`  ${CURRENCY} Value: ${roundHundredths(outtx.cur)}`)
         }
 
-        // print total values for ETH and USD
+        // print total values for ETH and CURRENCY
         console.log(`Total ETH: ${outlist.reduce((total, tx) => total + tx.eth, 0)}`)
-        console.log(`Total USD: $${roundHundredths(outlist.reduce((total, tx) => total + tx.usd, 0))}`)
+        console.log(`Total ${CURRENCY}: ${roundHundredths(outlist.reduce((total, tx) => total + tx.cur, 0))}`)
 
     } catch (error) {
         console.log(error);
     }
 }
 
-if (process.argv.length < 3 || process.argv.length > 5) {
-    console.log(`Usage: ${process.argv[0]} ${process.argv[1]} <ETH Address> [year] [month]`)
-} else {
-    if (process.argv.length == 5) {
-        ethgettx(process.argv[2], process.argv[3], process.argv[4]);
-    } else if (process.argv.length == 4) {
-        ethgettx(process.argv[2], process.argv[3], -1);
-    } else {
-        ethgettx(process.argv[2], -1, -1);
-    }
+var argv = require('minimist')(process.argv.slice(2), {string: "_"});
+
+if (argv.hasOwnProperty('startdate')) {
+    START_DATE = new Date(argv.startdate)
 }
+
+if (argv.hasOwnProperty('enddate')) {
+    END_DATE = new Date(argv.enddate)
+}
+
+if (argv.hasOwnProperty('currency')) {
+    CURRENCY = argv.currency
+}
+
+ethgettx(argv._[0])
