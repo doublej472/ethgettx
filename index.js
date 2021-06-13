@@ -93,5 +93,4 @@ if (process.argv.length < 3 || process.argv.length > 5) {
     } else {
         ethgettx(process.argv[2], -1, -1);
     }
-
 }
